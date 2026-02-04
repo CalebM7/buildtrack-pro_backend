@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import mongoSanitize from 'express-mongo-sanitize';
+import sanitize from 'mongo-sanitize';
 import hpp from 'hpp';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
@@ -49,7 +49,12 @@ app.use(express.urlencoded({
 app.use(cookieParser());
 
 // Data sanitization against NoSQL query injection
-app.use(mongoSanitize());
+app.use((req, res, next) => {
+  sanitize(req.body);
+  sanitize(req.query);
+  sanitize(req.params);
+  next();
+});
 
 // Prevent parameter pollution
 app.use(hpp());
@@ -61,7 +66,8 @@ app.use(compression());
 // Define your routes here
 // e.g., app.use('/api/v1/users', userRoutes);  
 app.get('/', (req, res) => res.send('API is running...'));
-
+const authRouter =  await import('./routes/authRoutes.js');
+app.use('/api/auth', authRouter.default);
 
 // app.use('/api/v1/users', userRouter);
 
