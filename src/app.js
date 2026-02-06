@@ -7,6 +7,11 @@ import hpp from 'hpp';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 
+import authRouter from './routes/authRoutes.js';
+import projectRouter from './routes/projectRoutes.js';
+import globalErrorHandler from './middleware/errorHandler.js';
+
+
 const app = express();
 
 // 1. GLOBAL MIDDLEWARES
@@ -24,7 +29,7 @@ app.use(
 
 // Enable CORS - Cross-Origin Resource Sharing
 app.use(cors({
-  origin: process.env.CLIENT_URI,
+  origin: process.env.CLIENT_URL,
   credentials: true
 }));
 
@@ -63,16 +68,12 @@ app.use(hpp());
 app.use(compression());
 
 // 2. ROUTES
-// Define your routes here
-// e.g., app.use('/api/v1/users', userRoutes);  
 app.get('/', (req, res) => res.send('API is running...'));
-const authRouter =  await import('./routes/authRoutes.js');
-app.use('/api/auth', authRouter.default);
+app.use('/api/auth', authRouter);
+app.use('/api/projects', projectRouter);
 
-// app.use('/api/v1/users', userRouter);
-
-// 3. ERROR HANDLING MIDDLEWARE (will be added later)
-// app.use(globalErrorHandler);
+// 3. ERROR HANDLING MIDDLEWARE
+app.use(globalErrorHandler);
 
 export default app;
 
