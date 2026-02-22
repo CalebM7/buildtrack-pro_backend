@@ -18,10 +18,10 @@ const handleValidationErrorDB = (err) => {
 };
 
 const handleJWTError = () =>
-  new ApiError('Invalid token. Please log in again!', 401);
+  new ApiError(401, 'Invalid token. Please log in again!');
 
 const handleJWTExpiredError = () =>
-  new ApiError('Your token has expired! Please log in again.', 401);
+  new ApiError(401, 'Your token has expired! Please log in again.');
 
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({

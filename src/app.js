@@ -10,6 +10,7 @@ import cookieParser from 'cookie-parser';
 import authRouter from './routes/authRoutes.js';
 import projectRouter from './routes/projectRoutes.js';
 import globalErrorHandler from './middleware/errorHandler.js';
+import dailyReportRoutes from './routes/dailyReportRoutes.js';
 
 
 const app = express();
@@ -71,9 +72,9 @@ app.use(compression());
 app.get('/', (req, res) => res.send('API is running...'));
 app.use('/api/auth', authRouter);
 app.use('/api/projects', projectRouter);
+app.use('/api/daily-reports', dailyReportRoutes);
 
 // 3. ERROR HANDLING MIDDLEWARE
 app.use(globalErrorHandler);
 
 export default app;
-
