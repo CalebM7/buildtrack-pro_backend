@@ -11,7 +11,7 @@ import authRouter from './routes/authRoutes.js';
 import projectRouter from './routes/projectRoutes.js';
 import globalErrorHandler from './middleware/errorHandler.js';
 import dailyReportRoutes from './routes/dailyReportRoutes.js';
-
+import materialDeliveryRoutes from './routes/materialDeliveryRoutes.js';
 
 const app = express();
 
@@ -73,6 +73,7 @@ app.get('/', (req, res) => res.send('API is running...'));
 app.use('/api/auth', authRouter);
 app.use('/api/projects', projectRouter);
 app.use('/api/daily-reports', dailyReportRoutes);
+app.use('/api/material-deliveries', materialDeliveryRoutes);
 
 // 3. ERROR HANDLING MIDDLEWARE
 app.use(globalErrorHandler);
