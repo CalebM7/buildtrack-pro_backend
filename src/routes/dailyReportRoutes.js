@@ -10,7 +10,12 @@ import {
   addConcern,
   updateConcern,
   deleteConcern,
+  addActivityPhotos, 
+  addConcernPhotos
 } from '../controllers/dailyReportController.js';
+import upload, { handleUploadErrors } from '../middleware/upload.js';
+
+
 
 const router = express.Router();
 
@@ -70,6 +75,24 @@ router
   .delete(
     restrictTo('super_admin', 'company_admin', 'project_manager'),
     deleteConcern
+  );
+
+router
+  .route('/:id/teams/:teamId/activities/:activityId/photos')
+  .post(
+    restrictTo('super_admin', 'company_admin', 'project_manager', 'site_supervisor'),
+    upload.array('photos', 10), // Expect multiple photos under the "photos" key
+    handleUploadErrors, // Normalize Multer errors to ApiError
+    addActivityPhotos
+  );
+
+router
+  .route('/:id/concerns/:concernId/photos')
+  .post(
+    restrictTo('super_admin', 'company_admin', 'project_manager', 'site_supervisor'),
+    upload.array('photos', 10), // Same photo key as activity uploads
+    handleUploadErrors, // Normalize Multer errors to ApiError
+    addConcernPhotos
   );
 
 export default router;
