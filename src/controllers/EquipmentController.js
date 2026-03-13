@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Equipment from '../models/Equipment.js';
 import ApiError from '../utils/ApiError.js';
 import catchAsync from '../utils/catchAsync.js';
+import APIFeatures from '../utils/apiFeatures.js';
 
 // Normalize IDs to avoid hidden validation issues from whitespace/null values
 const normalizeObjectId = (id) => String(id ?? '').trim();
@@ -30,18 +31,18 @@ export const createEquipment = catchAsync(async (req, res, next) => {
 
 // GET /api/equipment
 export const getAllEquipment = catchAsync(async (req, res, next) => {
-  // Lightweight filter strategy for MVP
-  const filter = {};
-  if (req.query.project) filter.project = req.query.project;
-  if (req.query.status) filter.status = req.query.status;
-  if (req.query.category) filter.category = req.query.category;
-  if (req.query.utilizationStatus) filter.utilizationStatus = req.query.utilizationStatus;
-  if (req.query.ownershipType) filter.ownershipType = req.query.ownershipType;
+  const features = new APIFeatures(
+    Equipment.find()
+      .populate('project', 'title contractNo')
+      .populate('operator createdBy', 'name email role'),
+    req.query
+  )
+    .filter()
+    .sort('-createdAt')
+    .limitFields()
+    .paginate();
 
-  const equipmentList = await Equipment.find(filter)
-    .populate('project', 'title contractNo')
-    .populate('operator createdBy', 'name email role')
-    .sort({ createdAt: -1 });
+  const equipmentList = await features.query;
 
   res.status(200).json({
     status: 'success',

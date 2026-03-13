@@ -4,6 +4,7 @@ import Project from '../models/Project.js';
 import User from '../models/User.js';
 import ApiError from '../utils/ApiError.js';
 import catchAsync from '../utils/catchAsync.js';
+import APIFeatures from '../utils/apiFeatures.js';
 
 // Normalize IDs from params/query before validating
 const normalizeObjectId = (id) => String(id ?? '').trim();
@@ -88,20 +89,18 @@ export const createSiteInstruction = catchAsync(async (req, res, next) => {
 
 // GET /api/site-instructions
 export const getAllSiteInstructions = catchAsync(async (req, res, next) => {
-  // Basic filter set for MVP list views
-  const filter = {};
-  if (req.query.project) filter.project = req.query.project;
-  if (req.query.status) filter.status = req.query.status;
-  if (req.query.priority) filter.priority = req.query.priority;
-  if (req.query.recipient) filter.recipient = req.query.recipient;
+  const features = new APIFeatures(
+    SiteInstruction.find()
+      .populate('project', 'title contractNo')
+      .populate('issuedBy recipient createdBy', 'name email role'),
+    req.query
+  )
+    .filter()
+    .sort('-dateIssued -createdAt')
+    .limitFields()
+    .paginate();
 
-  const siteInstructions = await SiteInstruction.find(filter)
-    .populate('project', 'title contractNo')
-    .populate('issuedBy recipient createdBy', 'name email role')
-    .sort({
-      dateIssued: -1,
-      createdAt: -1,
-    });
+  const siteInstructions = await features.query;
 
   res.status(200).json({
     status: 'success',

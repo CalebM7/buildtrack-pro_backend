@@ -6,6 +6,7 @@ import MaterialDelivery from '../models/MaterialDelivery.js';
 import ApiError from '../utils/ApiError.js';
 // Async wrapper to forward thrown errors to global error handler
 import catchAsync from '../utils/catchAsync.js';
+import APIFeatures from '../utils/apiFeatures.js';
 
 // Normalize incoming IDs (trim spaces, coerce null/undefined safely)
 const normalizedObjectId = (id) => String(id ?? '').trim();
@@ -36,17 +37,18 @@ export const createMaterialDelivery = catchAsync(async (req, res, next) => {
 
 // Get /api/material-deliveries
 export const getAllMaterialDeliveries = catchAsync(async (req, res, next) => {
-  // Build dynamic filter from query params
-  const filter = {};
-  if (req.query.project) filter.project = req.query.project;
-  if (req.query.date) filter.date = req.query.date;
-  if (req.query.qualityStatus) filter.qualityStatus = req.query.qualityStatus;
+  const features = new APIFeatures(
+    MaterialDelivery.find()
+      .populate('project', 'title contractNo')
+      .populate('receivedBy checkedBy createdBy', 'name email role'),
+    req.query
+  )
+    .filter()
+    .sort('-date -createdAt')
+    .limitFields()
+    .paginate();
 
-  // Query + populate refs for readable API responses
-  const materialDeliveries = await MaterialDelivery.find(filter)
-    .populate('project', 'title contractNo')
-    .populate('receivedBy checkedBy createdBy', 'name email role')
-    .sort({ date: -1, createdAt: -1 });
+  const materialDeliveries = await features.query;
 
   // Return list
   res.status(200).json({

@@ -28,6 +28,8 @@ router.route('/')
         projectController.createProject
     );
 
+router.get('/:id/health', projectController.getProjectHealth);
+
 router.route('/:id')
     .get(projectController.getProjectById)
     .patch(

@@ -1,11 +1,12 @@
 import DailyReport from '../models/DailyReport.js';
 import ApiError from '../utils/ApiError.js';
 import catchAsync from '../utils/catchAsync.js';
+import APIFeatures from '../utils/apiFeatures.js';
 import mongoose from 'mongoose';
 
 const normalizeObjectId = (id) => String(id ?? '').trim();
 
-const validateObjectId = (id, fieldName = 'id') => {
+export const validateObjectId = (id, fieldName = 'id') => {
   const normalizedId = normalizeObjectId(id);
   if (!mongoose.Types.ObjectId.isValid(normalizedId)) {
     return new ApiError(400, `Invalid ${fieldName}: ${normalizedId}`);
@@ -23,13 +24,16 @@ export const createDailyReport = catchAsync(async (req, res, next) => {
 });
 
 export const getAllDailyReports = catchAsync(async (req, res, next) => {
-  const filter = {};
-  if (req.query.project) filter.project = req.query.project;
-  if (req.query.date) filter.date = req.query.date;
+  const features = new APIFeatures(
+    DailyReport.find().populate('project', 'title contractNo'),
+    req.query
+  )
+    .filter()
+    .sort('-date')
+    .limitFields()
+    .paginate();
 
-  const dailyReports = await DailyReport.find(filter)
-    .populate('project', 'title contractNo')
-    .sort({ date: -1 });
+  const dailyReports = await features.query;
 
   res.status(200).json({
     status: 'success',
