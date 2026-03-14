@@ -127,6 +127,47 @@ const workforceSummarySchema = new Schema(
   { _id: false }
 );
 
+// Sub-document for equipment used during the day
+const equipmentUsedSchema = new Schema(
+  {
+    type: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    quantity: {
+      type: Number,
+      min: 1,
+      default: 1,
+    },
+  },
+  { _id: false }
+);
+
+// Sub-document for information/drawings required
+const infoRequiredSchema = new Schema(
+  {
+    description: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+  },
+  { _id: false }
+);
+
+// Sub-document for possible delays
+const possibleDelaySchema = new Schema(
+  {
+    description: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+  },
+  { _id: false }
+);
+
 // Main DailyReport Schema for a single project on a single day
 const dailyReportSchema = new Schema(
   {
@@ -159,9 +200,15 @@ const dailyReportSchema = new Schema(
       afternoon: String,
       workable: { type: Boolean, default: true },
     },
+    // Optional: equipment used during the day (for weekly reporting table)
+    equipmentUsed: [equipmentUsedSchema],
     teams: [teamReportSchema],
     // Optional: clerk of works usually compiles this for weekly reporting
     workforceSummary: [workforceSummarySchema],
+    // Optional: information/drawings required
+    informationRequired: [infoRequiredSchema],
+    // Optional: possible delays
+    possibleDelays: [possibleDelaySchema],
     concerns: [concernSchema],
     safetyHazards: [safetyHazardSchema],
     safetyHazardsNoneFound: {
@@ -172,18 +219,42 @@ const dailyReportSchema = new Schema(
       type: String
     },
     visitors: [
-      {
-        name: String,
-        company: String,
-        purpose: String,
-      },
+    {
+      name: String,
+      company: String,
+      purpose: String,
+    },
     ],
-  },
-  {
+    equipmentUsed: [
+    {
+      type: String, // e.g. "Tower Crane", "Concrete Pump"
+      count: { type: Number, default: 1 },
+      remarks: String,
+    },
+    ],
+    possibleDelays: [    {
+      description: { type: String, required: true },
+      impact: String,
+      mitigation: String,
+    },
+    ],
+    informationRequired: [
+    {
+      description: { type: String, required: true },
+      requestedFrom: String,
+      dateRequested: { type: Date, default: Date.now },
+      status: {
+        type: String,
+        enum: ['open', 'resolved'],
+        default: 'open',
+      },
+    },
+    ],
+    },
+    {
     timestamps: true,
-  }
-);
-
+    }
+    );
 // Compound index to prevent duplicate reports for the same project on the same day
 dailyReportSchema.index({
   project: 1,

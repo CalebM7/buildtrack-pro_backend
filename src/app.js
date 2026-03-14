@@ -15,6 +15,7 @@ import materialDeliveryRoutes from './routes/materialDeliveryRoutes.js';
 import equipmentRoutes from './routes/equipmentRoutes.js';
 import siteInstructionRoutes from './routes/siteInstructionRoutes.js';
 import userRouter from './routes/userRoutes.js';
+import weeklyReportRouter from './routes/weeklyReportRoutes.js';
 
 
 const app = express();
@@ -81,6 +82,7 @@ app.use('/api/material-deliveries', materialDeliveryRoutes);
 app.use('/api/equipment', equipmentRoutes);
 app.use('/api/site-instructions', siteInstructionRoutes);
 app.use('/api/users', userRouter);
+app.use('/api/reports', weeklyReportRouter);
 
 // 3. ERROR HANDLING MIDDLEWARE
 app.use(globalErrorHandler);

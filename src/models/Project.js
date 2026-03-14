@@ -4,14 +4,20 @@ const blockSchema = new mongoose.Schema({
   blockId: {
     type: String,
     required: true,
-  }, // e.g 'A1', 'B2, 'A3', 'B4'
+  }, // e.g 'A1', 'B2', 'A3', 'B4', 'MUD'
   name: String, // e.g 'Block A1'
   type: String, // e.g social, affordable, market
   totalFloors: Number,
   currentProgress: {
     type: Number,
     default: 0,
-  }, // Percentage
+  }, // Overall Percentage
+  progressBreakdown: [
+    {
+      activity: { type: String, required: true }, // e.g 'Substructure', 'Superstructure', 'Finishes'
+      percentage: { type: Number, default: 0, min: 0, max: 100 },
+    }
+  ]
 });
 
 const projectSchema = new mongoose.Schema(
@@ -70,6 +76,12 @@ const projectSchema = new mongoose.Schema(
       min: 0,
       max: 100,
     },
+    ipcProgress: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
+    },
     status: {
       type: String,
       enum: ['planning', 'active', 'on_hold', 'completed'],
@@ -102,6 +114,12 @@ projectSchema.index({
 });
 
 // Virtuals
+projectSchema.virtual('daysElapsed').get(function () {
+  if (!this.commencementDate) return null;
+  const diff = new Date() - this.commencementDate;
+  return Math.floor(diff / (1000 * 60 * 60 * 24));
+});
+
 projectSchema.virtual('timeElapsedPercentage').get(function () {
   if (!this.commencementDate || !this.endingDate) return null;
   const totalDuration = this.endingDate - this.commencementDate;
